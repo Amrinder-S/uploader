@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload via Webhook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #drop-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        #file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #7289da;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        /* Added style for the progress bar container */
+        #progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        /* Added style for the URL text field and copy button */
+        #url-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #url-text {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+
+        #copy-button {
+            padding: 10px 20px;
+            background-color: #7289da;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        /* Added style for the QR code container */
+        #qr-code {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Upload via Webhook</h1>
+    
+    <div id="drop-area">
+        <p>Drag and drop a file here or</p>
+        <label for="file-input" id="file-label">Select a File</label>
+        <input type="file" id="file-input" accept=".txt, .jpg, .jpeg, .png, .pdf" onchange="handleFileUpload(this.files)">
+    </div>
+
+    <!-- Added a progress bar container -->
+    <div id="progress-container">
+        <progress id="progress-bar" max="100" value="0"></progress>
+        <p id="progress-text">Uploading... 0.00%</p>
+    </div>
+
+    <!-- Added a URL container -->
+    <div id="url-container">
+        <input type="text" id="url-text" readonly>
+        <button id="copy-button" onclick="copyURL()">Copy URL</button>
+    </div>
+
+    <!-- Added a QR code container -->
+    <div id="qr-code"></div>
+
+    <!-- Include the qrious library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
+    <script>
+        // Function to handle file upload
+        function handleFileUpload(files) {
+            const file = files[0];
+            const maxSize = 26214400; // 25 MB in bytes
+
+            if (!file) {
+                alert("Please select a file to upload.");
+                return;
+            }
+
+            if (file.size > maxSize) {
+                alert("File size should be less than 25 MB.");
+                return;
+            }
+
+            // Display the progress bar container
+            document.getElementById("progress-container").style.display = "block";
+
+            // Create a FormData object and append the selected file
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // Replace with your Discord webhook URL
+            const webhookUrl = "https://discord.com/api/webhooks/1154486002769997875/souwYIAGAyb0fzfAWqy54OZ9X62UYbUi-gjXOpyZiILoseC2b-0nMKmiejama43C3ypu";
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // Successful request
+                        console.log("Response:", xhr.responseText);
+                        const response = JSON.parse(xhr.responseText);
+                        const url = response.attachments[0].url;
+                        
+                        // Display the URL and copy button
+                        document.getElementById("url-text").value = url;
+                        document.getElementById("url-container").style.display = "block";
+
+                        // Generate and display the QR code for the URL
+                        generateQRCode(url);
+                    } else {
+                        // Error occurred
+                        console.error("Request failed with code:", xhr.status);
+                        alert("There was an error while uploading. Please try again.");
+                    }
+                    // Hide the progress bar container
+                    document.getElementById("progress-container").style.display = "none";
+                }
+            };
+
+            xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    const progressBar = document.getElementById("progress-bar");
+                    const progressText = document.getElementById("progress-text");
+
+                    progressBar.value = percentComplete;
+                    progressText.innerText = `Uploading... ${percentComplete.toFixed(2)}%`;
+                }
+            });
+
+            xhr.open("POST", webhookUrl, true);
+            xhr.send(formData);
+        }
+        function generateQRCode(url) {
+            const qrCodeContainer = document.getElementById('qr-code');
+            qrCodeContainer.innerHTML = ''; // Clear previous content
+
+            const qr = new QRious({
+                element: qrCodeContainer,
+                value: url,
+                size: 200, // Adjust the size as needed
+            });
+        }
+        // Function to copy the URL to the clipboard
+        function copyURL() {
+            const urlText = document.getElementById("url-text");
+            urlText.select();
+            document.execCommand("copy");
+            alert("URL copied to clipboard!");
+            generateQRCode(urlText)
+        }
+
+        // Function to generate the QR code
+
+    </script>
+</body>
+</html>
