@@ -82,8 +82,8 @@
         <button id="copy-button" onclick="copyURL()">Copy URL</button>
     </div>
 
-    <!-- Added a QR code container -->
-    <div id="qr-code"></div>
+    <!-- QR code container -->
+    <canvas id="qr-code"></canvas>
 
     <!-- Include the qrious library -->
     <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
@@ -154,6 +154,16 @@
             xhr.open("POST", webhookUrl, true);
             xhr.send(formData);
         }
+
+        // Function to copy the URL to the clipboard
+        function copyURL() {
+            const urlText = document.getElementById("url-text");
+            urlText.select();
+            document.execCommand("copy");
+            alert("URL copied to clipboard!");
+        }
+
+        // Function to generate the QR code
         function generateQRCode(url) {
             const qrCodeContainer = document.getElementById('qr-code');
             qrCodeContainer.innerHTML = ''; // Clear previous content
@@ -164,17 +174,6 @@
                 size: 200, // Adjust the size as needed
             });
         }
-        // Function to copy the URL to the clipboard
-        function copyURL() {
-            const urlText = document.getElementById("url-text");
-            urlText.select();
-            document.execCommand("copy");
-            alert("URL copied to clipboard!");
-            generateQRCode(urlText)
-        }
-
-        // Function to generate the QR code
-
     </script>
 </body>
 </html>
